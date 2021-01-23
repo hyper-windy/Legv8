@@ -5,31 +5,32 @@
 #include<string.h>
 #include<sstream>
 #include<map>
+#include<vector>
 
 using namespace std;
 
 class PreProcess {
 private:
-    string  instructions[1000];
-    string  data[1000];
-    string  linkFile;
-    int     numberOfInstructions;
-    int     numberOfData;
-    map<string, int> label;
+    vector<string>      instructions;
+    vector<string>      data;
+    string              linkFile;   
+    map<string, int>    label;
 public:
-    PreProcess(string _linkFile) {
-        this->numberOfInstructions = 0;
-        this->numberOfData = 0;
-        this->linkFile = _linkFile;
-    }
+    PreProcess(string _linkFile) : linkFile(_linkFile) {}
     string  getToken(string _instruction, int pos); // get Word at position(pos) from string _instruction
     string  getString(string _instruction);         // get string in " "
     int     countToken(string _instruction);        // count word in a string _instruction
     void    readFile();                             // read File
-    int     getNumberOfInstructions()   {return this->numberOfInstructions;} // get number of Instructions
+    int     getNumberOfInstructions()   {return this->instructions.size();} // get number of Instructions
     string  getInstructions(int index)  {return this->instructions[index];}  // get Instruction at Index      
-    int     getNumberOfData()           {return this->numberOfData;}         // get number of Data
+    int     getNumberOfData()           {return this->data.size();}         // get number of Data
     string  getData(int index)          {return this->data[index];}          // get Data at index
+    void    printLabel() {
+        for(auto it = label.begin(); it != label.end(); ++it)
+        {
+            std::cout << it->first << " " << it->second << "\n";
+        }
+    }
 };
 
 string  PreProcess::getToken(string _instruction, int pos) {
@@ -83,8 +84,7 @@ void    PreProcess::readFile() {
             temp[pos] = ' ';
         }
         if(!getToken(temp, 1).compare("")) continue;
-        numberOfData++;
-        data[numberOfData - 1] = temp;
+        data.push_back(temp);
     }
     // READ INSTRUCTION
     while(!inFile.eof()) {
@@ -93,7 +93,7 @@ void    PreProcess::readFile() {
             int pos = (int)temp.find(':');
             string labelName = temp.substr(0, pos);
             labelName = getToken(labelName, 1);
-            label.insert(std::pair<string, int>(labelName, numberOfInstructions));
+            label.insert(std::pair<string, int>(labelName, instructions.size()));
             temp.erase(temp.begin(), temp.begin() + pos + 1);
         }
         if((int)temp.find("//") >= 0) {
@@ -101,12 +101,12 @@ void    PreProcess::readFile() {
             temp.erase(temp.begin() + pos, temp.end());
         }
         if(!getToken(temp, 1).compare("")) continue;
-        numberOfInstructions++;
-        instructions[numberOfInstructions - 1] = temp;
+        instructions.push_back(temp);
     }
 }
 
 int main() {
     PreProcess a("text.txt");
     a.readFile();
+    a.printLabel();
 }
