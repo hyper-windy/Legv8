@@ -1,3 +1,6 @@
+// Memory: not yet
+
+#pragma once
 #include <iostream>
 #include <sstream>
 #include <cstring> // cstring::memmove()
@@ -15,7 +18,7 @@ public:
     ~Memory();
     void set(int index, void *source, size_t size);
     void *get(int index);
-    void log(int block = 4);
+    void log(int bytes = 40);
     void loadVariable(string line, int &top);
 };
 
@@ -30,39 +33,35 @@ char *Memory::getAddress(int index) // TODO: checking before return
 
 void Memory::set(int index, void *source, size_t size) // TODO: checking before write, endianToggle
 {
-    // size_t top;
     char *dest = getAddress(index);
     memmove(dest, source, size);
 }
 
-void Memory::log(int block)
+void Memory::log(int bytes)
 {
-    int lines = (size + block - 1) / block;
-    char *readPtr = (char *)mem;
+    int lines = min((int)size, bytes);
+    char *readPtr = mem;
     for (int i = 0; i < lines; i++)
     {
-        cout << " | " << *readPtr;
-        // cout << " | " << (int)*readPtr;
+        // cout << " | " << *readPtr;
+        cout << " | " << (unsigned short)(*readPtr);
         readPtr++;
         cout << endl;
     }
 }
-
-const int LINE_MAX_SIZE = 100;
 
 void Memory::loadVariable(string raw, int &top)
 {
     stringstream ss(raw);
     string header;
     ss >> header;
-    // cout << header << endl;
 
     bool success = true;
 
-    while (success)
+    while (success) // TODO: legv8, not mips
     {
         success = false;
-        if (header == ".byte")
+        if (header == ".byte") 
         {
             char a;
             if (ss >> a)
@@ -102,8 +101,7 @@ void Memory::loadVariable(string raw, int &top)
             }
             top += 8;
         }
-
-        else if (header == ".asciiz")
+        else if (header == ".asciz") // TODO: tìm cách bắt skip character \n\t\0, ...
         {
             char a;
             if (ss >> a)
@@ -119,29 +117,31 @@ void Memory::loadVariable(string raw, int &top)
                 top += 1;
             }
         }
-        else if (header == ".space")
+        else if (header == ".skip")
         {
             int space;
             ss >> space;
             top += space;
         }
         else
-            cout << "Invalid type\n";
+            cout << "Invalid type: " << header << endl;
     }
 }
 
-// int main()
-// {
-//     Memory mem(4 * 10);
+/*
+int main()
+{
+    Memory mem(4 * 10);
 
-//     string data[] = { ".word 10 21 22 23", ".asciiz abc\n" };
-//     stringstream ss(data[1]);
+    string data[] = { ".word 10 21 22 23", ".asciz abc\n" };
+    stringstream ss(data[1]);
 
-//     int N = sizeof(data) / sizeof(data[0]);
-//     int top = 0;
-//     for (int i = 0; i < N; i++)
-//         mem.loadVariable(data[i], top);
+    int N = sizeof(data) / sizeof(data[0]);
+    int top = 0;
+    for (int i = 0; i < N; i++)
+        mem.loadVariable(data[i], top);
 
-//     mem.log();
-//     return 0;
-// }
+    mem.log();
+    return 0;
+}
+// */

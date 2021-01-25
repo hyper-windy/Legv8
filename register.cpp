@@ -1,3 +1,5 @@
+// Register: no idea
+#pragma once
 #include<iostream>
 using namespace std; 
 class Register
@@ -11,4 +13,5 @@ class Register
         {
             _Register[i] = value;
         }
+        void log(int bytes = 40) {} // TODO: add register log
     };
