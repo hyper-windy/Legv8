@@ -105,6 +105,20 @@ void PreProcess::readFile(string filename)
                 int pos = (int)temp.find(":");
                 temp[pos] = ' ';
             }
+            while((int)temp.find(",") != -1) {
+                int pos = (int)temp.find(",");
+                temp.erase(pos, 1);
+            }
+            if ((int)temp.find("//") >= 0)
+            {
+                int pos = (int)temp.find("//");
+                temp.erase(temp.begin() + pos, temp.end());
+            }
+            if ((int)temp.find("@") >= 0) //
+            {
+                int pos = (int)temp.find("@");
+                temp.erase(temp.begin() + pos, temp.end());
+            }
             tokens = parseTokens(temp);
             if (!tokens.empty() && tokens[0] != ".data") // fix this
                 data.push_back(temp);
@@ -128,6 +142,15 @@ void PreProcess::readFile(string filename)
             {
                 int pos = (int)temp.find("@");
                 temp.erase(temp.begin() + pos, temp.end());
+            }
+            if ((int)temp.find("#") >= 0) //
+            {
+                int pos = (int)temp.find("#");
+                temp.erase(pos, 1);
+            }
+            while((int)temp.find(",") != -1) {
+                int pos = (int)temp.find(",");
+                temp.erase(pos, 1);
             }
             if (!parseTokens(temp).empty() && tokens[0] != ".func")
                 instructions.push_back(temp);
