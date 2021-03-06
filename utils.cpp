@@ -107,7 +107,7 @@ void PreProcess::readFile(string filename)
             }
             while((int)temp.find(",") != -1) {
                 int pos = (int)temp.find(",");
-                temp.erase(pos, 1);
+                temp[pos] = ' ';
             }
             if ((int)temp.find("//") >= 0)
             {
@@ -125,14 +125,6 @@ void PreProcess::readFile(string filename)
             break;
 
         case FUNC: // TODO: remove .func from temp, remove comma
-            if ((int)temp.find(':') >= 0)
-            {
-                int pos = (int)temp.find(':');
-                string labelName = temp.substr(0, pos);
-                labelName = parseTokens(labelName)[0];
-                label.insert({labelName, instructions.size()});
-                temp.erase(temp.begin(), temp.begin() + pos + 1);
-            }
             if ((int)temp.find("//") >= 0)
             {
                 int pos = (int)temp.find("//");
@@ -143,6 +135,14 @@ void PreProcess::readFile(string filename)
                 int pos = (int)temp.find("@");
                 temp.erase(temp.begin() + pos, temp.end());
             }
+            if ((int)temp.find(':') >= 0)
+            {
+                int pos = (int)temp.find(':');
+                string labelName = temp.substr(0, pos);
+                labelName = parseTokens(labelName)[0];
+                label.insert({labelName, instructions.size()});
+                temp.erase(temp.begin(), temp.begin() + pos + 1);
+            }
             if ((int)temp.find("#") >= 0) //
             {
                 int pos = (int)temp.find("#");
@@ -150,7 +150,7 @@ void PreProcess::readFile(string filename)
             }
             while((int)temp.find(",") != -1) {
                 int pos = (int)temp.find(",");
-                temp.erase(pos, 1);
+                temp[pos] = ' ';
             }
             if (!parseTokens(temp).empty() && tokens[0] != ".func")
                 instructions.push_back(temp);
