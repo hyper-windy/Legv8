@@ -38,8 +38,8 @@ void Program::pushInstruction(string raw) // TODO: Init Instruction correctly
         instructions.push_back(new RInstruction(raw)); // RInstruction(hardware, raw, index)
     else if (type == Instruction::IType::I)
         instructions.push_back(new IInstruction(raw));
-    else if (type == Instruction::IType::J)
-        instructions.push_back(new JInstruction(raw));
+    else if (type == Instruction::IType::D)
+        instructions.push_back(new DInstruction(raw));
     else
         cout << "Invalid instruction type - Line: " << raw;
 }

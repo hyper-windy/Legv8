@@ -12,7 +12,7 @@ public:
     {
         R,
         I,
-        J
+        D
     };
     static IType instructionType(string s);
 
@@ -30,14 +30,20 @@ class RInstruction : public Instruction
 {
 public:
     RInstruction(string s): Instruction(s) {}
+    virtual void execute();
+    ~RInstruction() {}
 };
 class IInstruction : public Instruction
 {
 public:
     IInstruction(string s): Instruction(s) {}
+    virtual void execute();
+    ~IInstruction() {}
 };
-class JInstruction : public Instruction
+class DInstruction : public Instruction
 {
 public:
-    JInstruction(string s): Instruction(s) {}
+    DInstruction(string s): Instruction(s) {}
+    virtual void execute();
+    ~DInstruction() {}
 };
