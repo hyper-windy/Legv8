@@ -69,7 +69,7 @@ void Program::log()
 
 int main()
 {
-    string filename = "example/strcmp.v";
+    string filename = "example/test.v";
     PreProcess source(filename);    
     
     Program leg;

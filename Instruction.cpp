@@ -1,13 +1,14 @@
 #pragma once
 #include "utils.cpp"
 #include "Hardware.cpp"
+#include <algorithm>
 
 class Instruction
 {
 public:
     Instruction(string s): s(s) {};
     Instruction(Hardware *hardware, string s, int index): hardware(hardware), address(index), s(s) {};
-    void execute();
+    virtual void execute() = 0;
     enum IType
     {
         R,
@@ -16,34 +17,63 @@ public:
     };
     static IType instructionType(string s);
 
-private:
+protected: //update
     Hardware *hardware;
     int address;
     string s; // for testing
 };
 
-void Instruction::execute() { cout << "Running " << s << endl; }
-Instruction::IType Instruction::instructionType(string s) { return IType::I; }
+//void Instruction::execute() { cout << "Running " << s << endl; }
+
+Instruction::IType Instruction::instructionType(string s) { 
+    //TODO: implement
+    vector<string> insWord = PreProcess::parseTokens(s);
+    // int length = insWord.size();
+    // for(int i=0; i < length; i++) 
+    //     transform(insWord[i].begin(), insWord[i].end(), insWord[i].begin(), ::toupper); // transform to uppercase
+    if(!insWord[0].compare("ADD") || !insWord[0].compare("ADDS") || !insWord[0].compare("AND") || !insWord[0].compare("ANDS")
+    || !insWord[0].compare("BR") || !insWord[0].compare("EOR") || !insWord[0].compare("LSL") || !insWord[0].compare("LSR")
+    || !insWord[0].compare("ORR") || !insWord[0].compare("SUB") || !insWord[0].compare("SUBS") || !insWord[0].compare("FADDS")
+    || !insWord[0].compare("FADDD") || !insWord[0].compare("FCMPS") || !insWord[0].compare("FCMPD") || !insWord[0].compare("FDIVS")
+    || !insWord[0].compare("FDIVD") || !insWord[0].compare("FMULS") || !insWord[0].compare("FMULD") || !insWord[0].compare("FSUBS")
+    || !insWord[0].compare("FSUBD") || !insWord[0].compare("LDURS") || !insWord[0].compare("LDURD")) 
+        return IType::R;
+    //TODO:: finish IInstruction,....
+    return IType::I; 
+}
 
 // TODO:
 class RInstruction : public Instruction
 {
 public:
     RInstruction(string s): Instruction(s) {}
-    virtual void execute();
+    void execute();
     ~RInstruction() {}
 };
 class IInstruction : public Instruction
 {
 public:
     IInstruction(string s): Instruction(s) {}
-    virtual void execute();
+    void execute();
     ~IInstruction() {}
 };
 class DInstruction : public Instruction
 {
 public:
     DInstruction(string s): Instruction(s) {}
-    virtual void execute();
+    void execute() {cout << "d";}
     ~DInstruction() {}
 };
+
+void RInstruction::execute() {
+    vector<string> insWord = PreProcess::parseTokens(s);
+    if(!insWord[0].compare("ADD")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
+    cout << "success";
+}
+
+void IInstruction::execute() {
+    vector<string> insWord = PreProcess::parseTokens(s);
+    if(!insWord[0].compare("ADDI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
+}

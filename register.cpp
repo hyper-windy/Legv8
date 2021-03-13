@@ -13,5 +13,8 @@ class Register
         {
             _Register[i] = value;
         }
-        void log(int bytes = 40) {} // TODO: add register log
+        void log(int bytes = 40) {
+            for(int i = 0; i<32; i++) 
+            cout<<"Register " << i << " : " << _Register[i] << endl; 
+        } // TODO: add register log
     };
