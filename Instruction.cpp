@@ -1,5 +1,6 @@
 #pragma once
 #include "utils.cpp"
+#include "Hardware.cpp"
 
 class Instruction
 {
