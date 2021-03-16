@@ -35,11 +35,11 @@ void Program::pushInstruction(string raw) // TODO: Init Instruction correctly
 {
     Instruction::IType type = Instruction::instructionType(raw);
     if (type == Instruction::IType::R)
-        instructions.push_back(new RInstruction(raw)); // RInstruction(hardware, raw, index)
+        instructions.push_back(new RInstruction(hardware, raw)); // RInstruction(hardware, raw, index)
     else if (type == Instruction::IType::I)
-        instructions.push_back(new IInstruction(raw));
+        instructions.push_back(new IInstruction(hardware, raw)); // Iinstruction(hardware, raw, index)
     else if (type == Instruction::IType::D)
-        instructions.push_back(new DInstruction(raw));
+        instructions.push_back(new DInstruction(hardware, raw)); 
     else
         cout << "Invalid instruction type - Line: " << raw;
 }
@@ -57,7 +57,7 @@ void Program::run()
         PC++;
         instructions[PC - 1]->execute();
     }
-    cout << "Program finished running\n";
+     cout << "Program finished running\n";
 }
 
 void Program::log()
@@ -90,7 +90,6 @@ int main()
     // cout << "Log label\n";
     // for (auto p: source.label)
     //     cout << p.first << ": " << p.second << endl;
-
 
     leg.run();
     leg.log();

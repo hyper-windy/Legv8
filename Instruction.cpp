@@ -8,6 +8,7 @@ class Instruction
 public:
     Instruction(string s): s(s) {};
     Instruction(Hardware *hardware, string s, int index): hardware(hardware), address(index), s(s) {};
+    Instruction(Hardware *hardware, string s): hardware(hardware), s(s) {}; // New
     virtual void execute() = 0;
     enum IType
     {
@@ -47,6 +48,7 @@ class RInstruction : public Instruction
 {
 public:
     RInstruction(string s): Instruction(s) {}
+    RInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute();
     ~RInstruction() {}
 };
@@ -54,6 +56,7 @@ class IInstruction : public Instruction
 {
 public:
     IInstruction(string s): Instruction(s) {}
+    IInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute();
     ~IInstruction() {}
 };
@@ -61,19 +64,20 @@ class DInstruction : public Instruction
 {
 public:
     DInstruction(string s): Instruction(s) {}
+    DInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute() {cout << "d";}
     ~DInstruction() {}
 };
 
 void RInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADD")) 
-        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
-    cout << "success";
+     if(!insWord[0].compare("ADD")) 
+         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
+    cout << insWord[0]<<endl<<insWord[1]<<endl<<insWord[2]<<endl<<insWord[3];
 }
 
 void IInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADDI")) 
-        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
+     if(!insWord[0].compare("ADDI")) 
+         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
 }

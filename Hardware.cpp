@@ -10,7 +10,7 @@ using namespace std;
 
 class Hardware
 {
-private:
+public:
     Register *_reg;
     Memory *_mem;
     map<string, int> _data;
@@ -24,7 +24,13 @@ public:
         _mem = new Memory(memsize);
         PC = 0;
     }
-    ~Hardware() {} // TODO: cleanup
+    ~Hardware()
+    {
+        if (_reg != NULL)
+            delete _reg;
+        if (_mem != NULL)
+            delete _mem;
+    } // TODO: cleanup
 
     long GetRegister(string reg_name);
 
@@ -40,28 +46,29 @@ public:
     void log(int bytes = 40);
 };
 
-
-long Hardware::GetRegister(string reg_name) {
-    stringstream ss(reg_name.substr(1, reg_name.length())); 
-    int i; 
-    ss>>i; 
-    return _reg->Get(i); 
+long Hardware::GetRegister(string reg_name)
+{
+    stringstream ss(reg_name.substr(1, reg_name.length()));
+    int i;
+    ss >> i;
+    return _reg->Get(i);
 }
 
-void Hardware::SetRegister(string reg_name, long value) {
-    stringstream ss(reg_name.substr(1, reg_name.length())); 
-    int i; 
-    ss>>i; 
+void Hardware::SetRegister(string reg_name, long value)
+{
+    stringstream ss(reg_name.substr(1, reg_name.length()));
+    int i;
+    ss >> i;
     _reg->Set(i, value);
 }
 
 void Hardware::pushData(string data, int &addr)
 {
-    stringstream ss(data); 
+    stringstream ss(data);
     string data_name;
-    ss>>data_name; 
-    _data[data_name.substr(0, data_name.length()-1)] = addr;
-    _mem->loadVariable(data.substr(data_name.length()+1, data.length()), addr);
+    ss >> data_name;
+    _data[data_name.substr(0, data_name.length() - 1)] = addr;
+    _mem->loadVariable(data.substr(data_name.length() + 1, data.length()), addr);
 }
 
 void Hardware::log(int bytes)
@@ -69,7 +76,7 @@ void Hardware::log(int bytes)
     cout << "-------------MEMORY-------------\n";
     _mem->log(bytes);
     cout << "-------------REGISTER-------------\n";
-    _reg->log();   
+    _reg->log();
 }
 /*
 int main() {
