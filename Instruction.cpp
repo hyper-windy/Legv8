@@ -40,7 +40,13 @@ Instruction::IType Instruction::instructionType(string s) {
     || !insWord[0].compare("FSUBD") || !insWord[0].compare("LDURS") || !insWord[0].compare("LDURD")) 
         return IType::R;
     //TODO:: finish IInstruction,....
-    return IType::I; 
+    else if(!insWord[0].compare("ADDI") || !insWord[0].compare("ADDIS") || !insWord[0].compare("ANDI") || !insWord[0].compare("ANDIS")
+    || !insWord[0].compare("EORI") || !insWord[0].compare("ORRI") || !insWord[0].compare("SUBI") || !insWord[0].compare("SUBIS"))
+        return IType::I;
+    else if(!insWord[0].compare("LDUR") || !insWord[0].compare("LDURB") || !insWord[0].compare("LDURH") || !insWord[0].compare("LDURSW")
+    || !insWord[0].compare("LDXR") || !insWord[0].compare("STUR") || !insWord[0].compare("STURB") || !insWord[0].compare("LDURH")
+    || !insWord[0].compare("LDURSW") || !insWord[0].compare("LDXR"))
+        return IType::D;
 }
 
 // TODO:
