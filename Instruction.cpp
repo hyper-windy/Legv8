@@ -77,13 +77,35 @@ public:
 
 void RInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-     if(!insWord[0].compare("ADD")) 
-         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
-    cout << insWord[0]<<endl<<insWord[1]<<endl<<insWord[2]<<endl<<insWord[3];
+    if(!insWord[0].compare("ADD")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
+    else if(!insWord[0].compare("AND"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
+    else if(!insWord[0].compare("EOR"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ hardware->GetRegister(insWord[3]));
+    else if(!insWord[0].compare("LSL"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) << stoi(insWord[3]));
+    else if(!insWord[0].compare("LSR"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) >> stoi(insWord[3]));
+    else if(!insWord[0].compare("ORR"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | hardware->GetRegister(insWord[3]));
+    else if(!insWord[0].compare("AND"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
+    else if(!insWord[0].compare("SUB"))
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - hardware->GetRegister(insWord[3]));
+
 }
 
 void IInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-     if(!insWord[0].compare("ADDI")) 
-         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
+    if(!insWord[0].compare("ADDI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
+    else if(!insWord[0].compare("ANDI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & stoi(insWord[3]));
+    else if(!insWord[0].compare("EORI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ stoi(insWord[3]));
+    else if(!insWord[0].compare("ORRI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | stoi(insWord[3]));
+    else if(!insWord[0].compare("SUBI")) 
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - stoi(insWord[3]));
 }
