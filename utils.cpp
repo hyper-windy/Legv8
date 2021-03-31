@@ -28,7 +28,7 @@ public:
     PreProcess(string filename) { readFile(filename); }
     vector<string> instructions;
     vector<string> data;
-    map<string, int> label;
+    static map<string, int> label;
     // TODO: add global
 
     static vector<string> parseTokens(string _instruction);
@@ -38,6 +38,7 @@ private:
     void readFile(string filename);
 };
 
+map<string, int> PreProcess::label;
 vector<string> PreProcess::parseTokens(string _instruction)
 {
     vector<string> out;

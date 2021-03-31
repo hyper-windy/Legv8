@@ -14,7 +14,8 @@ public:
     {
         R,
         I,
-        D
+        D,
+        B
     };
     static IType instructionType(string s);
 
@@ -47,6 +48,8 @@ Instruction::IType Instruction::instructionType(string s) {
     || !insWord[0].compare("LDXR") || !insWord[0].compare("STUR") || !insWord[0].compare("STURB") || !insWord[0].compare("LDURH")
     || !insWord[0].compare("LDURSW") || !insWord[0].compare("LDXR"))
         return IType::D;
+    else if(!insWord[0].compare("B")) return IType::B;
+    return IType::D;
 }
 
 // TODO:
@@ -73,6 +76,14 @@ public:
     DInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute() {cout << "d";}
     ~DInstruction() {}
+};
+class BInstruction : public Instruction
+{
+public:
+    BInstruction(string s): Instruction(s) {}
+    BInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
+    void execute();
+    ~BInstruction() {}
 };
 
 void RInstruction::execute() {
@@ -108,4 +119,12 @@ void IInstruction::execute() {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | stoi(insWord[3]));
     else if(!insWord[0].compare("SUBI")) 
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - stoi(insWord[3]));
+}
+
+void BInstruction::execute() {
+    vector<string> insWord = PreProcess::parseTokens(s);
+    if(!insWord[0].compare("B")) {
+        hardware->PC = PreProcess::label[insWord[1]];
+        cout << "PC is: " << hardware->PC << '\n';
+    }
 }
