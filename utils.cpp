@@ -38,7 +38,9 @@ private:
     void readFile(string filename);
 };
 
+//Fix it
 map<string, int> PreProcess::label;
+
 vector<string> PreProcess::parseTokens(string _instruction)
 {
     vector<string> out;
