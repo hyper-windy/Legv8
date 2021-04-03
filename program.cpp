@@ -1,16 +1,13 @@
-// leg1.21.0
-// Prototype - can gop y va hoan thien
-
 #include <iostream>
 #include <vector>
 using namespace std;
 
 #include "utils.cpp"
 #include "Hardware.cpp"
+#include "Instruction.cpp"
+
 
 const int MEMORY_SIZE = (int)10e6;
-
-#include "Instruction.cpp"
 
 class Program
 {
@@ -73,8 +70,8 @@ void Program::log()
 
 int main()
 {
-    string filename = "example/test.v";
-    PreProcess source(filename);    
+    string example[] = { "example/test.v", "example/strcmp.v", "example/example.v" };
+    PreProcess source(example[2]);    
     
     Program leg;
 

@@ -29,8 +29,9 @@ protected: //update
 //void Instruction::execute() { cout << "Running " << s << endl; }
 
 Instruction::IType Instruction::instructionType(string s) { 
-    //TODO: implement
     vector<string> insWord = PreProcess::parseTokens(s);
+    vector<string> CBSet {"CBZ", "CBNZ", "B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
+	
     // int length = insWord.size();
     // for(int i=0; i < length; i++) 
     //     transform(insWord[i].begin(), insWord[i].end(), insWord[i].begin(), ::toupper); // transform to uppercase
@@ -50,7 +51,8 @@ Instruction::IType Instruction::instructionType(string s) {
     || !insWord[0].compare("LDURSW") || !insWord[0].compare("LDXR"))
         return IType::D;
     else if(!insWord[0].compare("B") || !insWord[0].compare("BL")) return IType::B;
-    else if(!insWord[0].compare("CBZ") || !insWord[0].compare("CBNZ")) return IType::CB;
+    else if (find(CBSet.begin(), CBSet.end(), insWord[0]) != CBSet.end())
+        return IType::B;
     return IType::D;
 }
 
@@ -144,12 +146,28 @@ void BInstruction::execute() {
     }
 }
 
-void CBInstruction::execute() {
+    
+void CBInstruction::execute()
+{
+    // vector<string> CBSet{"B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("CBZ")) {
-        if(hardware->GetRegister(insWord[1]) == 0) hardware->PC = PreProcess::label[insWord[2]];
+    string command = insWord[0];
+    if (command == "CBZ")
+    {
+        if (hardware->GetRegister(insWord[1]) == 0)
+            hardware->PC = PreProcess::label[insWord[2]];
     }
-    else if(!insWord[0].compare("CBNZ")) {
-        if(hardware->GetRegister(insWord[1]) != 0) hardware->PC = PreProcess::label[insWord[2]];
+    else if (command == "CBNZ")
+    {
+        if (hardware->GetRegister(insWord[1]) != 0)
+            hardware->PC = PreProcess::label[insWord[2]];
     }
+    else if ((command == "B.NE" && hardware->flags.ne()) ||
+             (command == "B.EQ" && hardware->flags.eq()) ||
+             (command == "B.LT" && hardware->flags.lt()) ||
+             (command == "B.LE" && hardware->flags.le()) ||
+             (command == "B.GT" && hardware->flags.gt()) ||
+             (command == "B.GE" && hardware->flags.ge()) ||
+             (command == "B.HS" && hardware->flags.hs()))
+        hardware->PC = PreProcess::label[insWord[1]];
 }

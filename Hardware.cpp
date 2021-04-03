@@ -8,14 +8,36 @@ using namespace std;
 #include "memory.cpp"
 #include "register.cpp"
 
+
+
+struct Flags
+{
+    void reset() { N = Z = V = C = false; }
+    void setN(bool on) { N = on; }
+    void setZ(bool on) { Z = on; }
+    void setV(bool on) { V = on; }
+    void setC(bool on) { C = on; }
+
+    bool eq() { return Z; }
+    bool ne() { return !Z; }
+    bool lt() { return N != V; }
+    bool le() { return Z || N != V; }
+    bool gt() { return !Z && N == V; }
+    bool ge() { return N == V; }
+    bool hs() { return C == 1; }
+
+private:    
+    bool N, Z, C, V;
+};
+
+
 class Hardware
 {
 public:
     Register *_reg;
     Memory *_mem;
     map<string, int> _data;
-
-public:
+    Flags flags;
     int PC;
 
     Hardware(size_t memsize)
