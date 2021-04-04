@@ -71,7 +71,7 @@ void Program::log()
 int main()
 {
     string example[] = { "example/test.v", "example/strcmp.v", "example/example.v" };
-    PreProcess source(example[2]);    
+    PreProcess source(example[0]);    
     
     Program leg;
 

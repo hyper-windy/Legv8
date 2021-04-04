@@ -76,9 +76,16 @@ public:
 class DInstruction : public Instruction
 {
 public:
-    DInstruction(string s): Instruction(s) {}
-    DInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
-    void execute() {cout << "d";}
+    DInstruction(string s) : Instruction(s) {}
+    DInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {} // New constructor
+    void execute();
+    void toggle(char *start, int n);
+    void Load(char *des, char *source, int n, bool wide_sign, int size);
+    void Store(char *des, char *source, int n, int size)
+    {
+        for (int i = 0; i < n; i++)
+            *(des + i) = *(source + size - n + i);
+    }
     ~DInstruction() {}
 };
 class BInstruction : public Instruction
@@ -170,4 +177,109 @@ void CBInstruction::execute()
              (command == "B.GE" && hardware->flags.ge()) ||
              (command == "B.HS" && hardware->flags.hs()))
         hardware->PC = PreProcess::label[insWord[1]];
+}
+
+
+
+void DInstruction::toggle(char *start, int n)
+{
+    for (int i = 0; i < n / 2; i++)
+    {
+        swap(start[i], start[n - i - 1]);
+    }
+}
+void DInstruction::Load(char *des, char *source, int n, bool wide_sign, int size)
+{
+    int sign = *(source)&0x80;
+    for (int i = 0; i < n; i++)
+        *(des + size - n + i) = *(source + i);
+    for (int i = 0; i < size - n; i++)
+        *(des + i) = *(des + i) & 0x00;
+    if (wide_sign)
+    {
+        if (sign != 0)
+            for (int i = 0; i < size - n; i++)
+                *(des + i) = *(des + i) | 0xff;
+    }
+    this->toggle(des, size);
+}
+void DInstruction::execute()
+{
+    vector<string> insWord = PreProcess::parseTokens(s);
+    if (!insWord[0].compare("LDUR"))
+    {
+        long tempregister;
+        int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 8, false, 8);
+        hardware->SetRegister(insWord[1], tempregister);
+    }
+
+    else if (!insWord[0].compare("LDURB"))
+    {
+        long tempregister;
+        int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 1, false, 8);
+        hardware->SetRegister(insWord[1], tempregister);
+    }
+
+    else if (!insWord[0].compare("LDURH"))
+    {
+        long tempregister;
+        int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 2, false, 8);
+        hardware->SetRegister(insWord[1], tempregister);
+    }
+
+    else if (!insWord[0].compare("LDURSW"))
+    {
+        long tempregister;
+        int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 4, true, 8);
+        hardware->SetRegister(insWord[1], tempregister);
+    }
+
+    else if (!insWord[0].compare("LDXR"))
+        cout << 0;
+
+    else if (!insWord[0].compare("STUR"))
+    {
+        long tempregister = hardware->GetRegister(insWord[1]);
+        this->toggle((char*)(&tempregister), 8);
+        int index = hardware->GetRegister(insWord[2]);
+        int offset = stoi(insWord[3]);
+        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 8, 8);
+    }
+
+    else if (!insWord[0].compare("STURB"))
+    {
+        long tempregister = hardware->GetRegister(insWord[1]);
+        this->toggle((char*)(&tempregister), 8);
+        int index = hardware->GetRegister(insWord[2]);
+        int offset = stoi(insWord[3]);
+        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 1, 8);
+    }
+
+    else if (!insWord[0].compare("STURH"))
+    {
+        long tempregister = hardware->GetRegister(insWord[1]);
+        this->toggle((char*)(&tempregister), 8);
+        int index = hardware->GetRegister(insWord[2]);
+        int offset = stoi(insWord[3]);
+        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 2, 8);
+    }
+
+    else if (!insWord[0].compare("STURW"))
+    {
+        long tempregister = hardware->GetRegister(insWord[1]);
+        this->toggle((char*)(&tempregister), 8);
+        int index = hardware->GetRegister(insWord[2]);
+        int offset = stoi(insWord[3]);
+        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 4, 8);
+    }
+
+    else if (!insWord[0].compare("STUXR"))
+        cout
+            << 0;
+    else
+        cout << 0;
 }

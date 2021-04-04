@@ -2,13 +2,12 @@
 
 #include <iostream>
 #include <map>
+#include <limits>
 using namespace std;
 
 #include "memory.cpp"
 #include "memory.cpp"
 #include "register.cpp"
-
-
 
 struct Flags
 {
@@ -26,10 +25,27 @@ struct Flags
     bool ge() { return N == V; }
     bool hs() { return C == 1; }
 
-private:    
+    bool checkOverflow(long a, long b)
+    {
+        long result = a + b;
+       // cout << "result: " << (int)result << endl;
+        if (a > 0 && b > 0 && result < 0)
+            return true;
+        if (a < 0 && b < 0 && result > 0)
+            return true;
+        return false;
+    }
+
+    bool checkFlagCarry(long a, long b)
+    {
+        if ((std::numeric_limits<unsigned long>::max() - (unsigned long)a) < (unsigned long)b)
+            return true;
+        return false;
+    }
+
+private:
     bool N, Z, C, V;
 };
-
 
 class Hardware
 {
