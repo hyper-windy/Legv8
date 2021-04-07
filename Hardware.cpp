@@ -86,6 +86,7 @@ public:
 
 long Hardware::GetRegister(string reg_name)
 {
+    if (reg_name == "SP") return _reg->Get(28); 
     stringstream ss(reg_name.substr(1, reg_name.length()));
     int i;
     ss >> i;

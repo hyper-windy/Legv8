@@ -50,9 +50,10 @@ Instruction::IType Instruction::instructionType(string s) {
     || !insWord[0].compare("LDXR") || !insWord[0].compare("STUR") || !insWord[0].compare("STURB") || !insWord[0].compare("LDURH")
     || !insWord[0].compare("LDURSW") || !insWord[0].compare("LDXR"))
         return IType::D;
-    else if(!insWord[0].compare("B") || !insWord[0].compare("BL")) return IType::B;
-    else if (find(CBSet.begin(), CBSet.end(), insWord[0]) != CBSet.end())
+    else if(!insWord[0].compare("B") || !insWord[0].compare("BL")) 
         return IType::B;
+    else if (find(CBSet.begin(), CBSet.end(), insWord[0]) != CBSet.end())
+        return IType::CB;
     return IType::D;
 }
 
@@ -124,7 +125,8 @@ void RInstruction::execute() {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
     else if(!insWord[0].compare("SUB"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - hardware->GetRegister(insWord[3]));
-
+    else if (!insWord[0].compare("BR"))
+        hardware->PC = hardware->GetRegister("X30");
 }
 
 void IInstruction::execute() {
@@ -148,7 +150,7 @@ void BInstruction::execute() {
         cout << "PC is: " << hardware->PC << '\n';
     }
     else if(!insWord[0].compare("BL")) {
-        hardware->SetRegister("X30", hardware->PC +4);
+        hardware->SetRegister("X30", hardware->PC + 1);
         hardware->PC = PreProcess::label[insWord[1]];
     }
 }

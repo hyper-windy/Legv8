@@ -1,0 +1,17 @@
+ADDI R0, R0, #1000
+fact:
+SUBI SP,SP,#16
+STUR LR,[SP,#8]
+//STUR X0,[SP,#0]
+//SUBIS XZR,X0,#1
+//B.GE L1
+//ADDI X1,XZR,#1
+//ADDI SP,SP,#16
+//BR LR
+//L1: SUBI X0,X0,#1
+//BL fact
+//LDUR X0,[SP,#0]
+//LDUR LR,[SP,#8]
+//ADDI SP,SP,#16
+//ADD X1,X0,X1
+//BR LR
