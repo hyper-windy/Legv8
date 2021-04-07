@@ -28,7 +28,7 @@ struct Flags
     bool checkOverflow(long a, long b)
     {
         long result = a + b;
-       // cout << "result: " << (int)result << endl;
+        // cout << "result: " << (int)result << endl;
         if (a > 0 && b > 0 && result < 0)
             return true;
         if (a < 0 && b < 0 && result > 0)
@@ -64,42 +64,23 @@ public:
     }
     ~Hardware()
     {
-        if (_reg != NULL)
-            delete _reg;
-        if (_mem != NULL)
-            delete _mem;
-    } // TODO: cleanup
-
-    long GetRegister(string reg_name);
-
-    void SetRegister(string reg_name, long value);
-
-    void pushData(string data, int &addr);
-
-    void set(int index, void *source, size_t size) // TODO: checking before write
-    {
-        _mem->set(index, source, size);
+        delete _reg;
+        delete _mem;
     }
 
+    long GetRegister(string reg_name) { return _reg->Get(indexOf(reg_name)); }
+    void SetRegister(string reg_name, long value) { _reg->Set(indexOf(reg_name), value); }
+
+    void pushData(string data, int &addr);
+    void set(int index, void *source, size_t size) { _mem->set(index, source, size); }
+
     void log(int bytes = 40);
+
+private:
+    int indexOf(string reg_name);
 };
 
-long Hardware::GetRegister(string reg_name)
-{
-    if (reg_name == "SP") return _reg->Get(28); 
-    stringstream ss(reg_name.substr(1, reg_name.length()));
-    int i;
-    ss >> i;
-    return _reg->Get(i);
-}
-
-void Hardware::SetRegister(string reg_name, long value)
-{
-    stringstream ss(reg_name.substr(1, reg_name.length()));
-    int i;
-    ss >> i;
-    _reg->Set(i, value);
-}
+// TODO: init value for SP
 
 void Hardware::pushData(string data, int &addr)
 {
@@ -117,8 +98,22 @@ void Hardware::log(int bytes)
     cout << "-------------REGISTER-------------\n";
     _reg->log();
 }
-/*
-int main() {
-    return 0; 
+
+int Hardware::indexOf(string reg_name)
+{
+    if (reg_name == "SP") // stack pointer
+        return 28;
+    else if (reg_name == "FP") // frame pointer
+        return 29;
+    else if (reg_name == "LR") // link register
+        return 30;
+    else if (reg_name == "XZR") // zero register
+        return 31;
+    else
+    {
+        stringstream ss(reg_name.substr(1, reg_name.length()));
+        int i = -1;
+        ss >> i;
+        return i;
+    }
 }
-*/

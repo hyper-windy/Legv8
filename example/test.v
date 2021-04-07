@@ -8,9 +8,6 @@ main:
     B def
 abc:
     
-    
-    
-    ạdasjdjadjadjasd
 
 
-def: mmmm
+def: 

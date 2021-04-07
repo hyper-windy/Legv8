@@ -1,5 +1,3 @@
-// Preprocess : checked
-
 #pragma once
 
 #include <iostream>
@@ -12,7 +10,6 @@ using namespace std;
 
 inline void LOG(string s){};
 // inline void LOG(string s) { cout << s; };
-
 
 class PreProcess
 {
@@ -29,7 +26,6 @@ public:
     vector<string> instructions;
     vector<string> data;
     static map<string, int> label;
-    // TODO: add global
 
     static vector<string> parseTokens(string _instruction);
     static string parseQuote(string _instruction);
@@ -38,7 +34,6 @@ private:
     void readFile(string filename);
 };
 
-//Fix it
 map<string, int> PreProcess::label;
 
 vector<string> PreProcess::parseTokens(string _instruction)
@@ -108,7 +103,8 @@ void PreProcess::readFile(string filename)
                 int pos = (int)temp.find(":");
                 temp[pos] = ' ';
             }
-            while((int)temp.find(",") != -1) {
+            while ((int)temp.find(",") != -1)
+            {
                 int pos = (int)temp.find(",");
                 temp[pos] = ' ';
             }
@@ -151,7 +147,8 @@ void PreProcess::readFile(string filename)
                 int pos = (int)temp.find("#");
                 temp.erase(pos, 1);
             }
-            while((int)temp.find(",") != -1) {
+            while ((int)temp.find(",") != -1)
+            {
                 int pos = (int)temp.find(",");
                 temp[pos] = ' ';
             }
@@ -162,9 +159,6 @@ void PreProcess::readFile(string filename)
     }
     inFile.close();
 }
-
-
-
 
 template <class T>
 void logVector(vector<T> vect)

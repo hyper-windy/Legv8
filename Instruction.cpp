@@ -3,13 +3,16 @@
 #include "Hardware.cpp"
 #include <algorithm>
 
+// TODO: thêm lệnh giả
+// TODO: add more ARM source code for testing
+
 class Instruction
 {
 public:
-    Instruction(string s): s(s) {};
-    Instruction(Hardware *hardware, string s, int index): hardware(hardware), address(index), s(s) {};
-    Instruction(Hardware *hardware, string s): hardware(hardware), s(s) {}; // New
+    Instruction(string s) : s(s){};
+    Instruction(Hardware *hardware, string s) : hardware(hardware), s(s){};
     virtual void execute() = 0;
+
     enum IType
     {
         R,
@@ -20,85 +23,78 @@ public:
     };
     static IType instructionType(string s);
 
-protected: //update
+protected:
     Hardware *hardware;
-    int address;
-    string s; // for testing
+    string s;
 };
 
-//void Instruction::execute() { cout << "Running " << s << endl; }
-
-Instruction::IType Instruction::instructionType(string s) { 
+Instruction::IType Instruction::instructionType(string s) // TODO: add defined instruction to sets
+{
     vector<string> insWord = PreProcess::parseTokens(s);
-    vector<string> CBSet {"CBZ", "CBNZ", "B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
-	
-    // int length = insWord.size();
-    // for(int i=0; i < length; i++) 
-    //     transform(insWord[i].begin(), insWord[i].end(), insWord[i].begin(), ::toupper); // transform to uppercase
-    if(!insWord[0].compare("ADD") || !insWord[0].compare("ADDS") || !insWord[0].compare("AND") || !insWord[0].compare("ANDS")
-    || !insWord[0].compare("BR") || !insWord[0].compare("EOR") || !insWord[0].compare("LSL") || !insWord[0].compare("LSR")
-    || !insWord[0].compare("ORR") || !insWord[0].compare("SUB") || !insWord[0].compare("SUBS") || !insWord[0].compare("FADDS")
-    || !insWord[0].compare("FADDD") || !insWord[0].compare("FCMPS") || !insWord[0].compare("FCMPD") || !insWord[0].compare("FDIVS")
-    || !insWord[0].compare("FDIVD") || !insWord[0].compare("FMULS") || !insWord[0].compare("FMULD") || !insWord[0].compare("FSUBS")
-    || !insWord[0].compare("FSUBD") || !insWord[0].compare("LDURS") || !insWord[0].compare("LDURD")) 
+    vector<string> CBSet{"CBZ", "CBNZ", "B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
+    vector<string> RSet{"ADD", "AND", "SUB", "EOR", "LSL", "LSR", "ORR", "AND", "BR"};
+    vector<string> ISet{"ADDI", "ANDI", "SUBI", "ADDIS", "ANDIS", "SUBIS", "EORI", "ORRI"};
+    vector<string> DSet{"LDUR", "LDURB", "LDURH", "LDURSW", "LDXR", "STUR", "STURB", "LDURH", "LDURSW", "LDXR"}; 
+    // 10 types
+    vector<string> BSet{"B", "BL"};
+
+    if (find(RSet.begin(), RSet.end(), insWord[0]) != RSet.end())
         return IType::R;
-    //TODO:: finish IInstruction,....
-    else if(!insWord[0].compare("ADDI") || !insWord[0].compare("ADDIS") || !insWord[0].compare("ANDI") || !insWord[0].compare("ANDIS")
-    || !insWord[0].compare("EORI") || !insWord[0].compare("ORRI") || !insWord[0].compare("SUBI") || !insWord[0].compare("SUBIS"))
+    else if (find(ISet.begin(), ISet.end(), insWord[0]) != ISet.end())
         return IType::I;
-    else if(!insWord[0].compare("LDUR") || !insWord[0].compare("LDURB") || !insWord[0].compare("LDURH") || !insWord[0].compare("LDURSW")
-    || !insWord[0].compare("LDXR") || !insWord[0].compare("STUR") || !insWord[0].compare("STURB") || !insWord[0].compare("LDURH")
-    || !insWord[0].compare("LDURSW") || !insWord[0].compare("LDXR"))
+    else if (find(DSet.begin(), DSet.end(), insWord[0]) != DSet.end())
         return IType::D;
-    else if(!insWord[0].compare("B") || !insWord[0].compare("BL")) 
+    else if (find(BSet.begin(), BSet.end(), insWord[0]) != BSet.end())
         return IType::B;
     else if (find(CBSet.begin(), CBSet.end(), insWord[0]) != CBSet.end())
         return IType::CB;
-    return IType::D;
+    else
+        throw "Undefined instruction";
 }
 
-// TODO:
 class RInstruction : public Instruction
 {
 public:
-    RInstruction(string s): Instruction(s) {}
-    RInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
+    RInstruction(string s) : Instruction(s) {}
+    RInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {} // New constructor
     void execute();
-    void setFlags(long res, long a, long b) {
-        if(res < 0) 
+    void setFlags(long res, long a, long b)
+    {
+        if (res < 0)
             hardware->flags.setN(true);
-        else if(res == 0) 
+        else if (res == 0)
             hardware->flags.setZ(true);
-        if(hardware->flags.checkOverflow(a, b)) 
+        if (hardware->flags.checkOverflow(a, b))
             hardware->flags.setC(true);
-        if(hardware->flags.checkFlagCarry(a, b))
+        if (hardware->flags.checkFlagCarry(a, b))
             hardware->flags.setV(true);
-}
+    }
     ~RInstruction() {}
 };
+
 class IInstruction : public Instruction
 {
 public:
-    IInstruction(string s): Instruction(s) {}
-    IInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
+    IInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {} // New constructor
     void execute();
-    void setFlags(long res, long a, long b) {
-        if(res < 0) 
+    void setFlags(long res, long a, long b)
+    {
+        if (res < 0)
             hardware->flags.setN(true);
-        else if(res == 0) 
+        else if (res == 0)
             hardware->flags.setZ(true);
-        if(hardware->flags.checkOverflow(a, b)) 
+        if (hardware->flags.checkOverflow(a, b))
             hardware->flags.setC(true);
-        if(hardware->flags.checkFlagCarry(a, b))
+        if (hardware->flags.checkFlagCarry(a, b))
             hardware->flags.setV(true);
     }
     ~IInstruction() {}
 };
+
 class DInstruction : public Instruction
 {
 public:
-    DInstruction(string s) : Instruction(s) {}
-    DInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {} // New constructor
+    DInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {}
     void execute();
     void toggle(char *start, int n);
     void Load(char *des, char *source, int n, bool wide_sign, int size);
@@ -109,11 +105,11 @@ public:
     }
     ~DInstruction() {}
 };
+
 class BInstruction : public Instruction
 {
 public:
-    BInstruction(string s): Instruction(s) {}
-    BInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
+    BInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {}
     void execute();
     ~BInstruction() {}
 };
@@ -121,82 +117,91 @@ public:
 class CBInstruction : public Instruction
 {
 public:
-    CBInstruction(string s): Instruction(s) {}
-    CBInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
+    CBInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {}
     void execute();
     ~CBInstruction() {}
 };
 
-void RInstruction::execute() {
+void RInstruction::execute()
+{
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADD") || !insWord[0].compare("ADDS")) {
+    if (!insWord[0].compare("ADD") || !insWord[0].compare("ADDS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
-        if(!insWord[0].compare("ADDS")) 
+        if (!insWord[0].compare("ADDS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
-    else if(!insWord[0].compare("AND") || !insWord[0].compare("ANDS")) {
+    else if (!insWord[0].compare("AND") || !insWord[0].compare("ANDS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
-        if(!insWord[0].compare("ANDS")) 
+        if (!insWord[0].compare("ANDS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
-    else if(!insWord[0].compare("EOR"))
+    else if (!insWord[0].compare("EOR"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ hardware->GetRegister(insWord[3]));
-    else if(!insWord[0].compare("LSL"))
+    else if (!insWord[0].compare("LSL"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) << stoi(insWord[3]));
-    else if(!insWord[0].compare("LSR"))
+    else if (!insWord[0].compare("LSR"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) >> stoi(insWord[3]));
-    else if(!insWord[0].compare("ORR"))
+    else if (!insWord[0].compare("ORR"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | hardware->GetRegister(insWord[3]));
-    else if(!insWord[0].compare("AND"))
+    else if (!insWord[0].compare("AND"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
-    else if(!insWord[0].compare("SUB") || !insWord[0].compare("SUBS")) {
+    else if (!insWord[0].compare("SUB") || !insWord[0].compare("SUBS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - hardware->GetRegister(insWord[3]));
-        if(!insWord[0].compare("SUBS")) 
+        if (!insWord[0].compare("SUBS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
     else if (!insWord[0].compare("BR"))
         hardware->PC = hardware->GetRegister("X30");
 }
 
-void IInstruction::execute() {
+void IInstruction::execute()
+{
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADDI") || !insWord[0].compare("ADDIS")) {
+    if (!insWord[0].compare("ADDI") || !insWord[0].compare("ADDIS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
-        if(!insWord[0].compare("ADDIS")) 
+        if (!insWord[0].compare("ADDIS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
     }
-    else if(!insWord[0].compare("ANDI") || !insWord[0].compare("ANDIS")) { 
+    else if (!insWord[0].compare("ANDI") || !insWord[0].compare("ANDIS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & stoi(insWord[3]));
-        if(!insWord[0].compare("ANDIS")) 
+        if (!insWord[0].compare("ANDIS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
     }
-    else if(!insWord[0].compare("EORI")) 
+    else if (!insWord[0].compare("EORI"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ stoi(insWord[3]));
-    else if(!insWord[0].compare("ORRI")) 
+    else if (!insWord[0].compare("ORRI"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | stoi(insWord[3]));
-    else if(!insWord[0].compare("SUBI") || !insWord[0].compare("SUBIS")) {
+    else if (!insWord[0].compare("SUBI") || !insWord[0].compare("SUBIS"))
+    {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - stoi(insWord[3]));
-        if(!insWord[0].compare("SUBIS")) 
+        if (!insWord[0].compare("SUBIS"))
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
     }
 }
 
-void BInstruction::execute() {
+void BInstruction::execute()
+{
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("B")) {
+    if (!insWord[0].compare("B"))
+    {
         hardware->PC = PreProcess::label[insWord[1]];
         cout << "PC is: " << hardware->PC << '\n';
     }
-    else if(!insWord[0].compare("BL")) {
+    else if (!insWord[0].compare("BL"))
+    {
         hardware->SetRegister("X30", hardware->PC + 1);
         hardware->PC = PreProcess::label[insWord[1]];
     }
 }
 
-    
+// TODO: test LDUR - offset in byte
 void CBInstruction::execute()
 {
-    // vector<string> CBSet{"B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
     vector<string> insWord = PreProcess::parseTokens(s);
     string command = insWord[0];
     if (command == "CBZ")
@@ -219,24 +224,14 @@ void CBInstruction::execute()
         hardware->PC = PreProcess::label[insWord[1]];
 }
 
-
-
 void DInstruction::toggle(char *start, int n)
 {
-    cout << "\n size of long: " << sizeof(long) << endl; 
-    for (int i = 0; i < n; i++) 
-         printf(" %02hhX", start[i]); 
-         cout<<" size: "<<n; 
-    printf("\n"); 
     for (int i = 0; i < n / 2; i++)
     {
         swap(start[i], start[n - i - 1]);
     }
-    for (int i = 0; i < n; i++) 
-         printf(" %02hhX", start[i]); 
-         cout<<" size: "<<n; 
-    printf("\n"); 
 }
+
 void DInstruction::Load(char *des, char *source, int n, bool wide_sign, int size)
 {
     int sign = *(source)&0x80;
@@ -294,18 +289,19 @@ void DInstruction::execute()
     {
         long tempregister = hardware->GetRegister(insWord[1]);
         cout << "value: " << tempregister << endl;
-        this->toggle((char*)(&tempregister), sizeof(tempregister));
+        this->toggle((char *)(&tempregister), sizeof(tempregister));
         cout << "value: " << tempregister << endl;
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        cout << "index: "<< index << endl << "ofsset: "<< offset<<endl;
-        this->Store(hardware->_mem->mem+index+ offset, (char *)(&tempregister), sizeof(tempregister), sizeof(tempregister));
+        cout << "index: " << index << endl
+             << "ofsset: " << offset << endl;
+        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), sizeof(tempregister), sizeof(tempregister));
     }
 
     else if (!insWord[0].compare("STURB"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char*)(&tempregister), 8);
+        this->toggle((char *)(&tempregister), 8);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
         this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 1, sizeof(tempregister));
@@ -314,7 +310,7 @@ void DInstruction::execute()
     else if (!insWord[0].compare("STURH"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char*)(&tempregister), sizeof(tempregister));
+        this->toggle((char *)(&tempregister), sizeof(tempregister));
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
         this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 2, 8);
@@ -323,13 +319,13 @@ void DInstruction::execute()
     else if (!insWord[0].compare("STURW"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char*)(&tempregister), 8);
+        this->toggle((char *)(&tempregister), 8);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
         this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 4, 8);
     }
 
-    else if (!insWord[0].compare("STUXR"))
+    else if (!insWord[0].compare("STUXR")) // TODO: STUXR
         cout
             << 0;
     else

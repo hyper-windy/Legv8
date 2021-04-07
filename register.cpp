@@ -25,5 +25,5 @@ public:
     {
         for (int i = 0; i < 32; i++)
             cout << "Register " << i << " : " << _Register[i] << endl;
-    } // TODO: add register log
+    }
 };

@@ -8,8 +8,9 @@ using namespace std;
 
 class Memory
 {
-private:
+public:
     char *mem;
+private:
     const size_t size;
     char *getAddress(int index);
 
@@ -26,12 +27,12 @@ Memory::Memory(size_t sizeInByte) : size(sizeInByte) { mem = new char[sizeInByte
 
 Memory::~Memory() { delete mem; }
 
-char *Memory::getAddress(int index) // TODO: checking before return
+char *Memory::getAddress(int index)
 {
     return mem + index;
 }
 
-void Memory::set(int index, void *source, size_t size) // TODO: checking before write, endianToggle
+void Memory::set(int index, void *source, size_t size)
 {
     char *dest = getAddress(index);
     memmove(dest, source, size);
@@ -58,7 +59,7 @@ void Memory::loadVariable(string raw, int &top)
 
     bool success = true;
 
-    while (success) // TODO: legv8, not mips
+    while (success)
     {
         success = false;
         if (header == ".byte") 
@@ -123,7 +124,7 @@ void Memory::loadVariable(string raw, int &top)
             ss >> space;
             top += space;
         }
-        else
+        else // TODO: add ascii
             cout << "Invalid type: " << header << endl;
     }
 }
