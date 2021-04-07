@@ -185,10 +185,19 @@ void CBInstruction::execute()
 
 void DInstruction::toggle(char *start, int n)
 {
+    cout << "\n size of long: " << sizeof(long) << endl; 
+    for (int i = 0; i < n; i++) 
+         printf(" %02hhX", start[i]); 
+         cout<<" size: "<<n; 
+    printf("\n"); 
     for (int i = 0; i < n / 2; i++)
     {
         swap(start[i], start[n - i - 1]);
     }
+    for (int i = 0; i < n; i++) 
+         printf(" %02hhX", start[i]); 
+         cout<<" size: "<<n; 
+    printf("\n"); 
 }
 void DInstruction::Load(char *des, char *source, int n, bool wide_sign, int size)
 {
@@ -246,10 +255,13 @@ void DInstruction::execute()
     else if (!insWord[0].compare("STUR"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char*)(&tempregister), 8);
+        cout << "value: " << tempregister << endl;
+        this->toggle((char*)(&tempregister), sizeof(tempregister));
+        cout << "value: " << tempregister << endl;
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 8, 8);
+        cout << "index: "<< index << endl << "ofsset: "<< offset<<endl;
+        this->Store(hardware->_mem->mem+index+ offset, (char *)(&tempregister), sizeof(tempregister), sizeof(tempregister));
     }
 
     else if (!insWord[0].compare("STURB"))
@@ -258,13 +270,13 @@ void DInstruction::execute()
         this->toggle((char*)(&tempregister), 8);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 1, 8);
+        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 1, sizeof(tempregister));
     }
 
     else if (!insWord[0].compare("STURH"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char*)(&tempregister), 8);
+        this->toggle((char*)(&tempregister), sizeof(tempregister));
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
         this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 2, 8);
