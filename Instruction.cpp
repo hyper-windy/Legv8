@@ -64,6 +64,16 @@ public:
     RInstruction(string s): Instruction(s) {}
     RInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute();
+    void setFlags(long res, long a, long b) {
+        if(res < 0) 
+            hardware->flags.setN(true);
+        else if(res == 0) 
+            hardware->flags.setZ(true);
+        if(hardware->flags.checkOverflow(a, b)) 
+            hardware->flags.setC(true);
+        if(hardware->flags.checkFlagCarry(a, b))
+            hardware->flags.setV(true);
+}
     ~RInstruction() {}
 };
 class IInstruction : public Instruction
@@ -72,6 +82,16 @@ public:
     IInstruction(string s): Instruction(s) {}
     IInstruction(Hardware* hardware, string s): Instruction(hardware, s) {} // New constructor
     void execute();
+    void setFlags(long res, long a, long b) {
+        if(res < 0) 
+            hardware->flags.setN(true);
+        else if(res == 0) 
+            hardware->flags.setZ(true);
+        if(hardware->flags.checkOverflow(a, b)) 
+            hardware->flags.setC(true);
+        if(hardware->flags.checkFlagCarry(a, b))
+            hardware->flags.setV(true);
+    }
     ~IInstruction() {}
 };
 class DInstruction : public Instruction
@@ -109,10 +129,16 @@ public:
 
 void RInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADD")) 
+    if(!insWord[0].compare("ADD") || !insWord[0].compare("ADDS")) {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + hardware->GetRegister(insWord[3]));
-    else if(!insWord[0].compare("AND"))
+        if(!insWord[0].compare("ADDS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
+    }
+    else if(!insWord[0].compare("AND") || !insWord[0].compare("ANDS")) {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
+        if(!insWord[0].compare("ANDS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
+    }
     else if(!insWord[0].compare("EOR"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ hardware->GetRegister(insWord[3]));
     else if(!insWord[0].compare("LSL"))
@@ -123,24 +149,36 @@ void RInstruction::execute() {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | hardware->GetRegister(insWord[3]));
     else if(!insWord[0].compare("AND"))
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & hardware->GetRegister(insWord[3]));
-    else if(!insWord[0].compare("SUB"))
+    else if(!insWord[0].compare("SUB") || !insWord[0].compare("SUBS")) {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - hardware->GetRegister(insWord[3]));
+        if(!insWord[0].compare("SUBS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
+    }
     else if (!insWord[0].compare("BR"))
         hardware->PC = hardware->GetRegister("X30");
 }
 
 void IInstruction::execute() {
     vector<string> insWord = PreProcess::parseTokens(s);
-    if(!insWord[0].compare("ADDI")) 
+    if(!insWord[0].compare("ADDI") || !insWord[0].compare("ADDIS")) {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) + stoi(insWord[3]));
-    else if(!insWord[0].compare("ANDI")) 
+        if(!insWord[0].compare("ADDIS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
+    }
+    else if(!insWord[0].compare("ANDI") || !insWord[0].compare("ANDIS")) { 
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) & stoi(insWord[3]));
+        if(!insWord[0].compare("ANDIS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
+    }
     else if(!insWord[0].compare("EORI")) 
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) ^ stoi(insWord[3]));
     else if(!insWord[0].compare("ORRI")) 
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) | stoi(insWord[3]));
-    else if(!insWord[0].compare("SUBI")) 
+    else if(!insWord[0].compare("SUBI") || !insWord[0].compare("SUBIS")) {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]) - stoi(insWord[3]));
+        if(!insWord[0].compare("SUBIS")) 
+            setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), stoi(insWord[3]));
+    }
 }
 
 void BInstruction::execute() {
