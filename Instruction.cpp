@@ -154,7 +154,7 @@ void RInstruction::execute()
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
     else if (!insWord[0].compare("BR"))
-        hardware->PC = hardware->GetRegister("X30");
+        hardware->PC = hardware->GetRegister(insWord[1]); 
 }
 
 void IInstruction::execute()
@@ -194,7 +194,7 @@ void BInstruction::execute()
     }
     else if (!insWord[0].compare("BL"))
     {
-        hardware->SetRegister("X30", hardware->PC + 1);
+        hardware->SetRegister("X30", hardware->PC);
         hardware->PC = PreProcess::label[insWord[1]];
     }
 }
@@ -254,9 +254,13 @@ void DInstruction::execute()
     {
         long tempregister;
         int size = sizeof(tempregister);
-        int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), hardware->_mem->mem +index, size, false, size);
-        hardware->SetRegister(insWord[1], tempregister);
+        int index;
+        if (hardware->_data.find(insWord[2]) != hardware->_data.end())
+            index = hardware->_data[insWord[2]];
+        else
+            index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), hardware->_mem->mem + index, size, false, size);
+        hardware->SetRegister(insWord[1], tempregister);    
     }
 
     else if (!insWord[0].compare("LDURB"))

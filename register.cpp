@@ -19,7 +19,9 @@ public:
     }
     void Set(int i, long value)
     {
-        _Register[i] = value;
+        if (i != 31)
+            _Register[i] = value;
+        // cout << "Update: R" << i << " = " << Get(i) << endl; 
     }
     void log(int bytes = 40)
     {

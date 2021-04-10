@@ -75,7 +75,7 @@ void Program::log()
 
 int main(int argc, char *argv[])
 {
-    string example[] = {"test.v", "strcmp.v", "example.v", "non_leaf.v"};
+    string example[] = {"test.v", "strcmp.v", "example.v", "non_leaf.v", "loop.v"};
     int fileN = 2;
 
     if (argc > 1)
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         }
     }
 
-#if 0
+#if 1
         cout << "Log data\n";
         logVector(source.data);
         cout << "Log source\n";

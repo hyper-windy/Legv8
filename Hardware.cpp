@@ -87,7 +87,7 @@ void Hardware::pushData(string data, int &addr)
     stringstream ss(data);
     string data_name;
     ss >> data_name;
-    _data[data_name.substr(0, data_name.length() - 1)] = addr;
+    _data[data_name] = addr;
     _mem->loadVariable(data.substr(data_name.length() + 1, data.length()), addr);
 }
 
