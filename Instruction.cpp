@@ -253,32 +253,36 @@ void DInstruction::execute()
     if (!insWord[0].compare("LDUR"))
     {
         long tempregister;
+        int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 8, false, 8);
+        this->Load((char *)(&tempregister), hardware->_mem->mem +index, size, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
     else if (!insWord[0].compare("LDURB"))
     {
         long tempregister;
+        int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 1, false, 8);
+        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 1, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
     else if (!insWord[0].compare("LDURH"))
     {
         long tempregister;
+        int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 2, false, 8);
+        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 2, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
     else if (!insWord[0].compare("LDURSW"))
     {
         long tempregister;
+        int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), (char *)(&hardware->_mem[index]), 4, true, 8);
+        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 4, true, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
@@ -288,41 +292,43 @@ void DInstruction::execute()
     else if (!insWord[0].compare("STUR"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        cout << "value: " << tempregister << endl;
-        this->toggle((char *)(&tempregister), sizeof(tempregister));
-        cout << "value: " << tempregister << endl;
+        int size = sizeof(tempregister);
+        this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
         cout << "index: " << index << endl
              << "ofsset: " << offset << endl;
-        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), sizeof(tempregister), sizeof(tempregister));
+        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), size, size);
     }
 
     else if (!insWord[0].compare("STURB"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char *)(&tempregister), 8);
+        int size = sizeof(tempregister);
+        this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 1, sizeof(tempregister));
+        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), 1, size);
     }
 
     else if (!insWord[0].compare("STURH"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char *)(&tempregister), sizeof(tempregister));
+        int size = sizeof(tempregister);
+        this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 2, 8);
+        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), 2, size);
     }
 
     else if (!insWord[0].compare("STURW"))
     {
         long tempregister = hardware->GetRegister(insWord[1]);
-        this->toggle((char *)(&tempregister), 8);
+        int size = sizeof(tempregister);
+        this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store((char *)(&hardware->_mem[index]) + offset, (char *)(&tempregister), 4, 8);
+        this->Store(hardware->_mem->mem +index + offset, (char *)(&tempregister), 4, size);
     }
 
     else if (!insWord[0].compare("STUXR")) // TODO: STUXR
