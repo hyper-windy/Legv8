@@ -60,9 +60,9 @@ _printf:
     BL printf               @ call printf
     POP {PC}                @ restore the stack pointer and return
    
+.balign 4
 .data
 
-.balign 4
 a:              .skip       400
 printf_str:     .asciz      "a[%d] = %d\n"
 exit_str:       .ascii      "Terminating program.\n"
