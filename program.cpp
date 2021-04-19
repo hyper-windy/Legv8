@@ -45,6 +45,8 @@ void Program::pushInstruction(string raw)
         instructions.push_back(new BInstruction(hardware, raw));
     else if (type == Instruction::IType::CB)
         instructions.push_back(new CBInstruction(hardware, raw));
+    else if (type == Instruction::IType::PI)
+        instructions.push_back(new PIInstruction(hardware, raw));
     else
         throw "Invalid instruction";
 }

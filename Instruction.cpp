@@ -19,7 +19,8 @@ public:
         I,
         D,
         B,
-        CB
+        CB,
+        PI //PSEUDO INSTRUCTION SET
     };
     static IType instructionType(string s);
 
@@ -34,10 +35,10 @@ Instruction::IType Instruction::instructionType(string s) // TODO: add defined i
     vector<string> CBSet{"CBZ", "CBNZ", "B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
     vector<string> RSet{"ADD", "AND", "SUB", "EOR", "LSL", "LSR", "ORR", "AND", "BR"};
     vector<string> ISet{"ADDI", "ANDI", "SUBI", "ADDIS", "ANDIS", "SUBIS", "EORI", "ORRI"};
-    vector<string> DSet{"LDUR", "LDURB", "LDURH", "LDURSW", "LDXR", "STUR", "STURB", "LDURH", "LDURSW", "LDXR"}; 
+    vector<string> DSet{"LDUR", "LDURB", "LDURH", "LDURSW", "LDXR", "STUR", "STURB", "LDURH", "LDURSW", "LDXR"};
     // 10 types
     vector<string> BSet{"B", "BL"};
-
+    vector<string> PISet{"CMP", "CMPI", "LDA", "MOV"};
     if (find(RSet.begin(), RSet.end(), insWord[0]) != RSet.end())
         return IType::R;
     else if (find(ISet.begin(), ISet.end(), insWord[0]) != ISet.end())
@@ -48,6 +49,8 @@ Instruction::IType Instruction::instructionType(string s) // TODO: add defined i
         return IType::B;
     else if (find(CBSet.begin(), CBSet.end(), insWord[0]) != CBSet.end())
         return IType::CB;
+    else if (find(PISet.begin(), PISet.end(), insWord[0]) != PISet.end())
+        return IType::PI;
     else
         throw "Undefined instruction";
 }
@@ -154,7 +157,7 @@ void RInstruction::execute()
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
     else if (!insWord[0].compare("BR"))
-        hardware->PC = hardware->GetRegister(insWord[1]); 
+        hardware->PC = hardware->GetRegister("X30");
 }
 
 void IInstruction::execute()
@@ -260,7 +263,7 @@ void DInstruction::execute()
         else
             index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
         this->Load((char *)(&tempregister), hardware->_mem->mem + index, size, false, size);
-        hardware->SetRegister(insWord[1], tempregister);    
+        hardware->SetRegister(insWord[1], tempregister);
     }
 
     else if (!insWord[0].compare("LDURB"))
@@ -268,7 +271,7 @@ void DInstruction::execute()
         long tempregister;
         int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 1, false, size);
+        this->Load((char *)(&tempregister), hardware->_mem->mem + index, 1, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
@@ -277,7 +280,7 @@ void DInstruction::execute()
         long tempregister;
         int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 2, false, size);
+        this->Load((char *)(&tempregister), hardware->_mem->mem + index, 2, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
@@ -286,7 +289,7 @@ void DInstruction::execute()
         long tempregister;
         int size = sizeof(tempregister);
         int index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
-        this->Load((char *)(&tempregister), hardware->_mem->mem +index, 4, true, size);
+        this->Load((char *)(&tempregister), hardware->_mem->mem + index, 4, true, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
 
@@ -300,8 +303,8 @@ void DInstruction::execute()
         this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        cout << "index: " << index << endl
-             << "ofsset: " << offset << endl;
+        //cout << "index: " << index << endl
+        //   << "ofsset: " << offset << endl;
         this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), size, size);
     }
 
@@ -332,7 +335,7 @@ void DInstruction::execute()
         this->toggle((char *)(&tempregister), size);
         int index = hardware->GetRegister(insWord[2]);
         int offset = stoi(insWord[3]);
-        this->Store(hardware->_mem->mem +index + offset, (char *)(&tempregister), 4, size);
+        this->Store(hardware->_mem->mem + index + offset, (char *)(&tempregister), 4, size);
     }
 
     else if (!insWord[0].compare("STUXR")) // TODO: STUXR
@@ -340,4 +343,76 @@ void DInstruction::execute()
             << 0;
     else
         cout << 0;
+}
+
+class PIInstruction : public DInstruction
+{
+public:
+    PIInstruction(Hardware *hardware, string s) : DInstruction(hardware, s) {} // New constructor
+    void execute();
+    void setFlags(long res, long a, long b)
+    {
+        if (res < 0)
+            hardware->flags.setN(true);
+        else if (res == 0)
+            hardware->flags.setZ(true);
+        if (hardware->flags.checkOverflow(a, b))
+            hardware->flags.setC(true);
+        if (hardware->flags.checkFlagCarry(a, b))
+            hardware->flags.setV(true);
+    }
+    // void Load(char *des, char *source, int n, bool wide_sign, int size)
+    // {
+    //     int sign = *(source)&0x80;
+    //     for (int i = 0; i < n; i++)
+    //         *(des + size - n + i) = *(source + i);
+    //     for (int i = 0; i < size - n; i++)
+    //         *(des + i) = *(des + i) & 0x00;
+    //     if (wide_sign)
+    //     {
+    //         if (sign != 0)
+    //             for (int i = 0; i < size - n; i++)
+    //                 *(des + i) = *(des + i) | 0xff;
+    //     }
+    //     this->toggle(des, size);
+    // }
+    ~PIInstruction() {}
+};
+
+void PIInstruction::execute()
+{
+    vector<string> insWord = PreProcess::parseTokens(s);
+    if (!insWord[0].compare("CMP"))
+    {
+        long tempregister;
+        tempregister = hardware->GetRegister(insWord[1]) - hardware->GetRegister(insWord[2]);
+        if (!insWord[0].compare("SUBS"))
+            setFlags(tempregister, hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]));
+    }
+
+    else if (!insWord[0].compare("CMPI"))
+    {
+        long tempregister;
+        tempregister = hardware->GetRegister(insWord[1]) - stoi(insWord[2]);
+        if (!insWord[0].compare("SUBS"))
+            setFlags(tempregister, hardware->GetRegister(insWord[1]), stoi(insWord[2]));
+    }
+
+    else if (!insWord[0].compare("LDA"))
+    {
+        long tempregister;
+        int size = sizeof(tempregister);
+        int index;
+        if (hardware->_data.find(insWord[2]) != hardware->_data.end())
+            index = hardware->_data[insWord[2]];
+        else
+            index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        this->Load((char *)(&tempregister), hardware->_mem->mem + index, size, false, size);
+        hardware->SetRegister(insWord[1], tempregister);
+    }
+
+    else if (!insWord[0].compare("MOV"))
+    {
+        hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]));
+    }
 }
