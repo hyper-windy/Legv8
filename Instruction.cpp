@@ -157,7 +157,7 @@ void RInstruction::execute()
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
     else if (!insWord[0].compare("BR"))
-        hardware->PC = hardware->GetRegister("X30");
+        hardware->PC = hardware->GetRegister(insWord[1]);
 }
 
 void IInstruction::execute()
