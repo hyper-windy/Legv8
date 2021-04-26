@@ -33,7 +33,7 @@ Instruction::IType Instruction::instructionType(string s) // TODO: add defined i
 {
     vector<string> insWord = PreProcess::parseTokens(s);
     vector<string> CBSet{"CBZ", "CBNZ", "B.NE", "B.EQ", "B.LT", "B.LE", "B.GT", "B.GE", "B.HS"};
-    vector<string> RSet{"ADD", "AND", "SUB", "EOR", "LSL", "LSR", "ORR", "AND", "BR"};
+    vector<string> RSet{"ADD", "AND", "SUB", "EOR", "LSL", "LSR", "ORR", "AND", "BR", "FADDS", "FCMPS", "FDIVS", "FMULS", "FSUBS", };
     vector<string> ISet{"ADDI", "ANDI", "SUBI", "ADDIS", "ANDIS", "SUBIS", "EORI", "ORRI"};
     vector<string> DSet{"LDUR", "LDURB", "LDURH", "LDURSW", "LDXR", "STUR", "STURB", "LDURH", "LDURSW", "LDXR"};
     // 10 types
@@ -158,6 +158,16 @@ void RInstruction::execute()
     }
     else if (!insWord[0].compare("BR"))
         hardware->PC = hardware->GetRegister(insWord[1]);
+
+    //update float instructions    
+    else if (!insWord[0].compare("FADDS"))
+        hardware->setFloatRegister(insWord[1], hardware->getFloatRegister(insWord[2]) + hardware->getFloatRegister(insWord[3]));
+    else if (!insWord[0].compare("FSUBS"))
+        hardware->setFloatRegister(insWord[1], hardware->getFloatRegister(insWord[2]) - hardware->getFloatRegister(insWord[3]));
+    else if (!insWord[0].compare("FMULS"))
+        hardware->setFloatRegister(insWord[1], hardware->getFloatRegister(insWord[2]) * hardware->getFloatRegister(insWord[3]));
+    else if (!insWord[0].compare("FDIVS"))
+        hardware->setFloatRegister(insWord[1], hardware->getFloatRegister(insWord[2]) / hardware->getFloatRegister(insWord[3]));
 }
 
 void IInstruction::execute()
