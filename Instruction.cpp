@@ -2,7 +2,6 @@
 #include "utils.cpp"
 #include "Hardware.cpp"
 #include <algorithm>
-
 // TODO: thêm lệnh giả
 // TODO: add more ARM source code for testing
 
@@ -20,7 +19,8 @@ public:
         D,
         B,
         CB,
-        PI //PSEUDO INSTRUCTION SET
+        PI,     //PSEUDO INSTRUCTION SET
+        Syscall // System call set newewww
     };
     static IType instructionType(string s);
 
@@ -51,6 +51,8 @@ Instruction::IType Instruction::instructionType(string s) // TODO: add defined i
         return IType::CB;
     else if (find(PISet.begin(), PISet.end(), insWord[0]) != PISet.end())
         return IType::PI;
+    else if (insWord[0] == "syscall")
+        return IType::Syscall; // Newwwwwwwww
     else
         throw "Undefined instruction";
 }
@@ -157,7 +159,8 @@ void RInstruction::execute()
             setFlags(hardware->GetRegister(insWord[1]), hardware->GetRegister(insWord[2]), hardware->GetRegister(insWord[3]));
     }
     else if (!insWord[0].compare("BR"))
-        hardware->PC = hardware->GetRegister("X30");
+        //hardware->PC = hardware->GetRegister("X30");
+        hardware->PC = hardware->GetRegister(insWord[1]);
 }
 
 void IInstruction::execute()
@@ -255,13 +258,16 @@ void DInstruction::execute()
     vector<string> insWord = PreProcess::parseTokens(s);
     if (!insWord[0].compare("LDUR"))
     {
+        if (hardware->_data.find(insWord[2]) != hardware->_data.end())
+        {
+            int value = hardware->_data[insWord[2]];
+            hardware->SetRegister(insWord[1], value);
+            return;
+        }
         long tempregister;
         int size = sizeof(tempregister);
         int index;
-        if (hardware->_data.find(insWord[2]) != hardware->_data.end())
-            index = hardware->_data[insWord[2]];
-        else
-            index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
+        index = hardware->GetRegister(insWord[2]) + stoi(insWord[3]);
         this->Load((char *)(&tempregister), hardware->_mem->mem + index, size, false, size);
         hardware->SetRegister(insWord[1], tempregister);
     }
@@ -361,21 +367,6 @@ public:
         if (hardware->flags.checkFlagCarry(a, b))
             hardware->flags.setV(true);
     }
-    // void Load(char *des, char *source, int n, bool wide_sign, int size)
-    // {
-    //     int sign = *(source)&0x80;
-    //     for (int i = 0; i < n; i++)
-    //         *(des + size - n + i) = *(source + i);
-    //     for (int i = 0; i < size - n; i++)
-    //         *(des + i) = *(des + i) & 0x00;
-    //     if (wide_sign)
-    //     {
-    //         if (sign != 0)
-    //             for (int i = 0; i < size - n; i++)
-    //                 *(des + i) = *(des + i) | 0xff;
-    //     }
-    //     this->toggle(des, size);
-    // }
     ~PIInstruction() {}
 };
 
@@ -414,5 +405,65 @@ void PIInstruction::execute()
     else if (!insWord[0].compare("MOV"))
     {
         hardware->SetRegister(insWord[1], hardware->GetRegister(insWord[2]));
+    }
+}
+
+class SyscallInstruction : public Instruction
+{
+public:
+    SyscallInstruction(Hardware *hardware, string s) : Instruction(hardware, s) {}
+    void execute();
+    ~SyscallInstruction() {}
+};
+
+void SyscallInstruction::execute()
+{
+    long value = hardware->GetRegister("X0");
+    if (value == 1)
+    {
+        long print_value = hardware->GetRegister("X1");
+        cout << print_value;
+    }
+    else if (value == 2)
+        cout << "float print";
+    else if (value == 3)
+        cout << "double print";
+    else if (value == 4)
+    {
+        int index = (int)hardware->GetRegister("X1");
+        string print_value = hardware->_mem->getString(index);
+        cout << "\nsyscall 8 print string: " << print_value << endl;
+    }
+    else if (value == 5)
+    {
+        long read_value;
+        cin >> read_value;
+        hardware->SetRegister("X0", read_value);
+    }
+    else if (value == 6)
+        cout << "read float";
+    else if (value == 7)
+        cout << "read double";
+    else if (value == 8)
+    {
+        string read_value;
+        getline(cin, read_value);
+        hardware->SetRegister("X2", read_value.length());
+        string raw = (string)".asciz" + (string)" \"" + read_value + (string)"\" ";
+        hardware->SetRegister("X1", hardware->_mem->getTop());
+        hardware->_mem->loadVariable(raw);
+    }
+    else if (value == 10)
+        exit(0);
+    else if (value == 11)
+    {
+        long print_value = hardware->GetRegister("X1");
+        cout << (char)print_value;
+    }
+    else if (value == 12)
+    {
+        char read_value;
+        cin.get(read_value);
+        hardware->SetRegister("X0", (long)read_value);
     }
 }

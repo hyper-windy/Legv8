@@ -10,6 +10,7 @@ class Memory
 {
 public:
     char *mem;
+    int top; 
 private:
     const size_t size;
     char *getAddress(int index);
@@ -20,10 +21,15 @@ public:
     void set(int index, void *source, size_t size);
     void *get(int index);
     void log(int bytes = 40);
-    void loadVariable(string line, int &top);
+    void loadVariable(string line); // edit top hereeee
+
+    // return top value;
+    int getTop();
+    // read string from memory (user for system call)
+    string getString(int add);
 };
 
-Memory::Memory(size_t sizeInByte) : size(sizeInByte) { mem = new char[sizeInByte]; }
+Memory::Memory(size_t sizeInByte) : size(sizeInByte), top(0) { mem = new char[sizeInByte]; }
 
 Memory::~Memory() { delete mem; }
 
@@ -51,7 +57,7 @@ void Memory::log(int bytes)
     }
 }
 
-void Memory::loadVariable(string raw, int &top)
+void Memory::loadVariable(string raw)
 {
     stringstream ss(raw);
     string header;
@@ -104,19 +110,27 @@ void Memory::loadVariable(string raw, int &top)
         }
         else if (header == ".asciz") // TODO: tìm cách bắt skip character \n\t\0, ...
         {
-            char a;
-            if (ss >> a)
-            {
-                success = true;
-                set(top, &a, 1);
+            // char a;
+            // if (ss >> a)
+            // {
+            //     success = true;
+            //     set(top, &a, 1);
+            //     top += 1;
+            // }
+            // else
+            // {
+            //     a = '\n';
+            //     set(top, &a, 1);
+            //     top += 1;
+            // }
+            string a = raw.substr(raw.find_first_of("\""), raw.length());
+            for (int i = 1; i<a.length()-2; i++) {
+                set(top, &a[i], 1);
                 top += 1;
             }
-            else
-            {
-                a = '\n';
-                set(top, &a, 1);
-                top += 1;
-            }
+            char endkey = '\n';
+            set(top, &endkey, 1);
+            top += 1;
         }
         else if (header == ".skip")
         {
@@ -129,6 +143,19 @@ void Memory::loadVariable(string raw, int &top)
     }
 }
 
+
+string Memory::getString(int add) {
+    stringstream ss; 
+    for (int i = 0; i<100; i++, add++) {
+        if (this->mem[add] == '\n') break;
+        ss << this->mem[add];
+    } 
+    return ss.str(); 
+}
+
+int Memory::getTop() {
+    return this->top; 
+}
 /*
 int main()
 {

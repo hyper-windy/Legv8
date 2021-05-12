@@ -14,7 +14,7 @@ public:
     Program();
     ~Program();
     void pushInstruction(string raw);
-    void pushData(string raw, int &byteAddress);
+    void pushData(string raw);
     void run();
     void log();
 
@@ -47,13 +47,15 @@ void Program::pushInstruction(string raw)
         instructions.push_back(new CBInstruction(hardware, raw));
     else if (type == Instruction::IType::PI)
         instructions.push_back(new PIInstruction(hardware, raw));
+    else if (type == Instruction::IType::Syscall)
+        instructions.push_back(new SyscallInstruction(hardware, raw));
     else
         throw "Invalid instruction";
 }
 
-void Program::pushData(string raw, int &top)
+void Program::pushData(string raw)
 {
-    hardware->pushData(raw, top);
+    hardware->pushData(raw);
 }
 
 void Program::run()
@@ -62,7 +64,9 @@ void Program::run()
     while (0 <= PC && PC < (int)instructions.size())
     {
         PC++;
+        //if(instructions[PC-1].s == "syscall")
         instructions[PC - 1]->execute();
+
     }
     cout << "Program finished running\n";
 }
@@ -74,10 +78,11 @@ void Program::log()
 }
 
 // TODO: thêm debugger
+//int top = 0; // global variable; 
 
 int main(int argc, char *argv[])
 {
-    string example[] = {"test.v", "strcmp.v", "example.v", "non_leaf.v", "loop.v"};
+    string example[] = {"test.v", "strcmp.v", "example.v", "non_leaf.v", "loop.v", "syscall.v"};
     int fileN = 2;
 
     if (argc > 1)
@@ -86,12 +91,12 @@ int main(int argc, char *argv[])
     PreProcess source("example/" + example[fileN]);
 
     // Load data
-    int top = 0;
+    //int top = 0;
     for (string var : source.data)
     {
         try
         {
-            leg.pushData(var, top);
+            leg.pushData(var);
         }
         catch (...)
         {

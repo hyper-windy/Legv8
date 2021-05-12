@@ -71,7 +71,7 @@ public:
     long GetRegister(string reg_name) { return _reg->Get(indexOf(reg_name)); }
     void SetRegister(string reg_name, long value) { _reg->Set(indexOf(reg_name), value); }
 
-    void pushData(string data, int &addr);
+    void pushData(string data);
     void set(int index, void *source, size_t size) { _mem->set(index, source, size); }
 
     void log(int bytes = 40);
@@ -82,13 +82,13 @@ private:
 
 // TODO: init value for SP
 
-void Hardware::pushData(string data, int &addr)
+void Hardware::pushData(string data)
 {
     stringstream ss(data);
     string data_name;
     ss >> data_name;
-    _data[data_name] = addr;
-    _mem->loadVariable(data.substr(data_name.length() + 1, data.length()), addr);
+    _data[data_name] = _mem->getTop();
+    _mem->loadVariable(data.substr(data_name.length() + 1, data.length()));
 }
 
 void Hardware::log(int bytes)
